@@ -639,7 +639,7 @@ public class HoeffdingTree extends AbstractClassifier {
                 leafNode = foundNode.parent;
             }
             return leafNode.getClassVotes(inst, this);
-          } else {
+        } else {
             int numClasses = inst.dataset().numClasses();
             // EXTENSION
             double[] dist = new double[numClasses];
