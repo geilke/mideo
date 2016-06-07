@@ -25,6 +25,7 @@ package org.kramerlab.mideo.core;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.io.Serializable;
 
 /**
  * Groups options of the same type and provides facilities to add and
@@ -32,7 +33,7 @@ import java.util.HashMap;
  *
  * @author Michael Geilke
  */
-public class Options {
+public class Options implements Serializable {
 
     private OptionType<String> stringOptions;
     private OptionType<Integer> integerOptions;
@@ -78,7 +79,7 @@ public class Options {
      * Is a group of options having type {@code T}. It provides methods
      * for managing these options, i.e., adding and retrieving options.
      */
-    public class OptionType<T> {
+    public class OptionType<T> implements Serializable {
      
         private Map<String, Option<T>> typeOptions;
 

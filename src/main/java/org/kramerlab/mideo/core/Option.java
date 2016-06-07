@@ -23,6 +23,7 @@
  */
 package org.kramerlab.mideo.core;
 
+import java.io.Serializable;
 import java.util.function.Predicate;
 
 /**
@@ -47,7 +48,7 @@ import java.util.function.Predicate;
  *
  * @author Michael Geilke
  */
-public class Option<T> {
+public class Option<T> implements Serializable {
 
     private String name;
     private String documentation;    

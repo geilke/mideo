@@ -61,20 +61,11 @@ import org.kramerlab.mideo.estimators.DensityEstimator;
  *
  * @author Michael Geilke
  */ 
-public class HoeffdingTreeCR implements DensityEstimator, Configurable {
+public class HoeffdingTreeCR implements DensityEstimator {
 
     private Logger logger;
 
-    private Options options;
-
-    private Option<String> leafClassifier = new Option<>(
-        "leafClassifier",
-        "the leaf classifier that is supposed to be used by the" + 
-        "Hoeffding tree. Possible choices: [MC | NB| NBA], where " +
-        "MC is MajorityClass, NB is NaiveBayes, and NBAdaptive is " + 
-        "NaiveBayesAdaptive",
-        "MC",
-        s -> "MC".equals(s) || "NB".equals(s) || "NBAdaptive".equals(s));
+    private String leafClassifier = "MC";
 
     private List<EstimatorType> supportedTypes;
     private List<RandomVariable> targetVariables;    
@@ -86,9 +77,6 @@ public class HoeffdingTreeCR implements DensityEstimator, Configurable {
         this.logger = LogManager.getLogger();
         this.supportedTypes = new ArrayList<>();
         this.supportedTypes.add(EstimatorType.DISC_X1_I_Y1___Yl);
-
-        this.options = new Options();
-        this.options.getStringOptions().addOption(leafClassifier);
     }
 
     /**
@@ -99,12 +87,7 @@ public class HoeffdingTreeCR implements DensityEstimator, Configurable {
      */
     public HoeffdingTreeCR(String leafClassifier) {
         this();
-        this.leafClassifier.setValue(leafClassifier);
-    }
-
-    @Override
-    public Options getOptions() {
-        return options;
+        this.leafClassifier = leafClassifier;
     }
 
     /**
@@ -131,7 +114,7 @@ public class HoeffdingTreeCR implements DensityEstimator, Configurable {
 
         // prepare Hoeffding tree for training
         this.ht = new HoeffdingTree();
-        ht.leafpredictionOption.setChosenLabel(leafClassifier.getValue()); 
+        ht.leafpredictionOption.setChosenLabel(leafClassifier); 
         ht.setModelContext(header);
         ht.prepareForUse();
     }

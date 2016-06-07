@@ -21,7 +21,7 @@
  * 02110-1301 USA
  *
  */
-package org.kramerlab.mideo.estimators.trees;
+package org.kramerlab.mideo.estimators.edo;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -45,11 +45,11 @@ import org.kramerlab.mideo.evaluation.measures.LL;
 /**
  * @author Michael Geilke
  */
-public class HoeffdingTreeCRTest {
+public class ChainBasedEstimatorTest {
  
     private Logger logger;
     private FileStream stream;
-    private HoeffdingTreeCR estimator;
+    private ChainBasedEstimator estimator;
 
     @Before
     public void setUp() {
@@ -72,13 +72,15 @@ public class HoeffdingTreeCRTest {
             List<RandomVariable> condVars = new ArrayList<>();
             List<RandomVariable> vars = stream.getRandomVariables();
             for (int i = 0; i < vars.size(); i++) {
-                if (i == vars.size() - 1) {
-                    targetVars.add(vars.get(i));
-                } else {
+                // use roughly half of the instances as target variables
+                // and the remaining ones as conditioned variables
+                if (i < (double) vars.size() / 2) {
                     condVars.add(vars.get(i));
+                } else {
+                    targetVars.add(vars.get(i));
                 }
             }
-            this.estimator = new HoeffdingTreeCR();
+            this.estimator = new ChainBasedEstimator(10, true);
             this.estimator.init(stream.getHeader(), targetVars, condVars);
         } catch (UnsupportedConfiguration ex) {
             logger.error(ex.toString());
@@ -93,10 +95,10 @@ public class HoeffdingTreeCRTest {
 
     /**
      * Tests whether the density value is larger than -infinity. For
-     * that purpose, it trains the estimator on the {@literal dataset-01}
-     * dataset with 50,000 instances and uses the remaining instances to
-     * measure the log-likelihood, which has to be strictly greater than
-     * {@code DOUBLE.NEGATIVE_INFINITY}.
+     * that purpose, it trains the estimator on the {@literal
+     * dataset-01} dataset with half of the instances and uses the
+     * remaining instances to measure the log-likelihood, which has to
+     * be strictly greater than {@code DOUBLE.NEGATIVE_INFINITY}.
      */
     @Test
     public void testDensityValue() {
