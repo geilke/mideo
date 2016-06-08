@@ -51,7 +51,7 @@ import org.kramerlab.mideo.core.ContinuousRandomVariable;
 import org.kramerlab.mideo.data.streams.Stream;
 import org.kramerlab.mideo.estimators.EstimatorType;
 import org.kramerlab.mideo.estimators.DensityEstimator;
-import org.kramerlab.mideo.estimators.occd.OCCDEstimator;
+// import org.kramerlab.mideo.estimators.occd.OCCDEstimator;
 import org.kramerlab.mideo.estimators.trees.HoeffdingTreeCR;
 import org.kramerlab.mideo.exceptions.UnsupportedConfiguration;
 
@@ -121,8 +121,8 @@ public class ChainBasedEstimator implements DensityEstimator {
         int bins = 10;
         int maxKernels = 10000;
         this.templateDiscreteBaseEstimator = new HoeffdingTreeCR();
-        this.templateContinuousBaseEstimator = new OCCDEstimator(bins, 
-                                                                 maxKernels);
+        // this.templateContinuousBaseEstimator = new OCCDEstimator(bins, 
+        //                                                         maxKernels);
     }
 
     /**

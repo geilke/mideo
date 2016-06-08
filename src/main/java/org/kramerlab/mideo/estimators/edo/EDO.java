@@ -47,7 +47,7 @@ import org.kramerlab.mideo.estimators.Module;
 import org.kramerlab.mideo.estimators.DensityEstimator;
 import org.kramerlab.mideo.estimators.EstimatorType;
 import org.kramerlab.mideo.estimators.trees.HoeffdingTreeCR;
-import org.kramerlab.mideo.estimators.occd.OCCDEstimator;
+// import org.kramerlab.mideo.estimators.occd.OCCDEstimator;
 import org.kramerlab.mideo.exceptions.UnsupportedConfiguration;
 
 /**
@@ -169,10 +169,10 @@ public class EDO implements DensityEstimator, Configurable {
         est.setBaseEstimator(EstimatorType.DISC_X1_I_Y1___Yl, htTemplate);
 
         // continuous base estimator
-        int bins = numBins.getValue();
-        int maxKernels = maxNumberOfKernels.getValue();
-        OCCDEstimator occd = new OCCDEstimator(bins, maxKernels);
-        est.setBaseEstimator(EstimatorType.CONT_X1_I_Y1___Yl, occd);
+        // int bins = numBins.getValue();
+        // int maxKernels = maxNumberOfKernels.getValue();
+        // OCCDEstimator occd = new OCCDEstimator(bins, maxKernels);
+        // est.setBaseEstimator(EstimatorType.CONT_X1_I_Y1___Yl, occd);
 
         // TODO The actual module support is still missing. Later on,
         // the structure of the modules has to be estimated.
