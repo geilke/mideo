@@ -40,16 +40,17 @@ import org.kramerlab.mideo.core.RandomVariable;
 import org.kramerlab.mideo.core.DiscreteRandomVariable;
 import org.kramerlab.mideo.exceptions.UnsupportedConfiguration;
 import org.kramerlab.mideo.data.streams.FileStream;
+import org.kramerlab.mideo.estimators.DensityEstimator;
 import org.kramerlab.mideo.evaluation.measures.LL;
 
 /**
  * @author Michael Geilke
  */
-public class ChainBasedEstimatorTest {
+public class EDOTest {
  
     private Logger logger;
     private FileStream stream;
-    private ChainBasedEstimator estimator;
+    private DensityEstimator estimator;
 
     @Before
     public void setUp() {
@@ -80,7 +81,7 @@ public class ChainBasedEstimatorTest {
                     targetVars.add(vars.get(i));
                 }
             }
-            this.estimator = new ChainBasedEstimator(10, true);
+            this.estimator = new EDO();
             this.estimator.init(stream.getHeader(), targetVars, condVars);
         } catch (UnsupportedConfiguration ex) {
             logger.error(ex.toString());

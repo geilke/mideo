@@ -63,14 +63,14 @@ import org.kramerlab.mideo.exceptions.UnsupportedConfiguration;
  * single classifier chain, an ensemble of classifier chains, or an
  * ensemble of weighted classifier chains. For details, we would like to
  * refer you to the paper:
-
+ *
  * <p>Michael Geilke, Andreas Karwath, Eibe Frank, and Stefan
  * Kramer.<br> Online Estimation of Discrete Densities.<br> In:
  * Proceedings of the ICDM 2013, pages 191-200, IEEE 2013.</p>
  *
  * Please notice that we separated the density estimator and the
  * inference operations. Anything related to inference is provided by
- * the density estimators used as base classifiers and {@link
+ * the base estimators and {@link
  * org.kramerlab.mideo.estimators.edo.EDO}
  *
  * @author Michael Geilke
