@@ -18,16 +18,16 @@ mvn assembly:single
 Subsequently, the jar file is available in the folder `target` and has the naming scheme ```mideo-*-jar-with-dependencies.jar```.
 
 ## Run
-Either, you run MiDEO directly from Maven:
+Either, you run MiDEO directly from Maven
 ```
 mvn exec:java -Dexec.mainClass="org.kramerlab.mideo.evaluation.JobCenter" -Dexec.args="-f examples/bn.eval -startIndex 1 -endIndex 1"
 ```
-or you use the standalone version of the jar file, which has been renamed to ```mideo.jar``` in this case:
+or you use the standalone version of the jar file (which has been renamed to ```mideo.jar``` in this case):
 ```
 java -Xmx10000M -cp mideo.jar org.kramerlab.mideo.evaluation.JobCenter -f examples/bn.eval -startIndex 1 -endIndex 1
 ```
 
-## Citation
+## Cite
 If you use MiDEO, please cite the following paper:
 
 Michael Geilke, Andreas Karwath, Eibe Frank, and Stefan Kramer. *Online Estimation of Discrete Densities*. In: Proceedings of the 13th IEEE International Conference on Data Mining (ICDM 2013), pp. 191-200, IEEE 2013. [doi:10.1109/ICDM.2013.91](http://dx.doi.org/10.1109/ICDM.2013.91).
