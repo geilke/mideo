@@ -18,7 +18,33 @@ mvn assembly:single
 Subsequently, the jar file is available in the folder `target` and has the naming scheme ```mideo-*-jar-with-dependencies.jar```.
 
 ## Run
-Either, you run MiDEO directly from Maven
+The easiest way to get in touch with MiDEO are EVAL files. They are basically a list of jobs that are supposed to be executed by the MiDEO framework, where each job specifies a data stream, a density estimator, and some evaluation. A simple example is provided by the file [bn.eval](examples/bn.eval):
+```
+[{
+    "jobDescription": {
+        "outputFile": "bn.result", 
+        "jobIndex": 1, 
+        "estimator": {
+            "label": "edo-cc-MC", 
+            "discreteBaseEstimator.leafClassifier": "MC", 
+            "type": "org.kramerlab.mideo.estimators.edo.EDO", 
+            "ensembleSize": 1, 
+            "seed": 35315}, 
+        "evaluation": {
+            "measure": "LL", 
+            "type": "org.kramerlab.mideo.evaluation.DensityEstimation"}, 
+        "stream": {
+            "label": "dataset-01", 
+            "numInstances": 100000,
+            "streamSource": "src/test/resources/dataset-01.arff", 
+            "classIndex": -1, 
+            "type": "org.kramerlab.mideo.data.streams.FileStream"}}, 
+    "result": null
+}]
+```
+In this example, the density estimator ```org.kramerlab.mideo.estimators.edo.EDO``` is used with a single classifier chain (ensembleSize) and majority class as base classifier (discreteBaseEstimator.leafClassifier). The evaluation is performed by ```org.kramerlab.mideo.evaluation.DensityEstimation```, which measure the average log-likelihood. The density estimator is trained and evaluated on a data stream created from the ARFF file ```src/test/resources/dataset-01.arff```. It will read 100000 instances from it.
+
+To use this EVAL file, one can run MiDEO either directly from Maven
 ```
 mvn exec:java -Dexec.mainClass="org.kramerlab.mideo.evaluation.JobCenter" -Dexec.args="-f examples/bn.eval -startIndex 1 -endIndex 1"
 ```
