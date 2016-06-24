@@ -137,6 +137,7 @@ public class DiscretizationFilter implements Filter {
         // discretization object is initialized.
         if (numberOfInstances < INITIAL_SAMPLE_SIZE) {
             valueSample.add(obs);
+
         } else if (discretization == null) {
             int bins = numBins;
             DiscretizationType type = DiscretizationType.EQUAL_WIDTH;

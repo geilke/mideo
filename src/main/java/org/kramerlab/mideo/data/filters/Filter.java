@@ -60,6 +60,8 @@ public interface Filter {
     /**
      * Transforms the given instance according to the filter.
      * @param inst the instance that should be tranformed
+     * @return a new instance that results from applying the filter to
+     * {@code inst}
      */
     Instance apply(final Instance inst);
 }

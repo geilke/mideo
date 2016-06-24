@@ -139,10 +139,9 @@ public interface DensityEstimator extends Copyable<DensityEstimator> {
     double getDensityValue(Instance inst);
 
     /**
-     * To evaluate and debug density estimators, they provide
-     * information on its model in JSON format. This could be something
-     * like the depth of trees, the number of nodes, the number of
-     * kernels, etc.
+     * To evaluate and debug density estimators, information on the
+     * model in JSON format. This could be something like the depth of
+     * trees, the number of nodes, the number of kernels, etc.
      *
      * @return information about the density estimator in JSON format
      */
