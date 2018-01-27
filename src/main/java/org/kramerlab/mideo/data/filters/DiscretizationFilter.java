@@ -170,4 +170,20 @@ public class DiscretizationFilter implements Filter {
         }
 	return discInst;
     }
+
+    /**
+     * Tests whether the instance belongs to a soft border.
+     *
+     * @param inst instance to be tested
+     * @param true iff the instance belongs to soft border
+     */
+    public boolean belongsToSoftBorder(Instance inst) {
+        String attName = variable.getName();
+        for (int i = 0; i < origHeader.numAttributes(); i++) {
+            if (attName.equals(origHeader.attribute(i).name())) {
+                return discretization.belongsToSoftBorder(inst.value(i));
+            }
+        }
+        return true;
+    }
 }

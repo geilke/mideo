@@ -68,7 +68,7 @@ public enum EstimatorType {
 
     
     /** 
-     * A Density estimator estimates a density {@literal f(X1, ..., Xk |
+     * A density estimator estimates a density {@literal f(X1, ..., Xk |
      * Y1, ..., Yl)}, where {@literal {X1, ..., Xk} \cap {Y1, ..., Yl} =
      * \emptyset}. To avoid unnecessary overhead, we require that
      * {@literal {X1, ..., Xk} \cup {Y1, ..., Yl} = header}. Otherwise,

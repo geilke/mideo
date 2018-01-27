@@ -43,6 +43,19 @@ import static org.kramerlab.mideo.core.ChernoffBounds.findLambdaForUpperBound;
  * |------------------|------------------|----------....---------------|
  * </pre>
  *
+ * Since the borders are subject to changes, the intervals defined by
+ * the borders are further divided into safe-to-use regions and
+ * so-called soft borders (TODO: ADD REFERENCE). Observations of a 
+ * safe-to-use region will stay in that bin with high probability, 
+ * whereas observation of soft borders can be assigned to a neighboring 
+ * bin with a certain likelihood.
+ *
+ * <pre>
+ * b0                 b1                 b2                             bk
+ * |-------------[----|--]-----------[---|-----]----....----------------|
+ * </pre>
+ *
+ * <p>@TODO sampling support</p> 
  * 
  *
  * @author Michael Geilke
@@ -132,6 +145,67 @@ public interface OnlineDiscretization extends Serializable {
             }
         }
         return getNumberOfBins() - 1;
+    }
+    
+    /**
+     * Checks whether observation {@code obs} belongs to a soft border.
+     *
+     * @param obs value to be tested
+     * @return true iff {@code obs} belongs to a soft border
+     */
+    default boolean belongsToSoftBorder(double obs) {
+        // parameters for Chernoff
+        double precision = 0.000001;
+        double delta = 0.90;
+
+        // further parameters
+        long I = 0;
+        int k = getNumberOfBins();
+        for (int i = 0; i < k; i++) {
+            I += getBinCount(i);
+        }
+
+        // This is a simplified version of the approach presented in the
+        // paper. Instead of the smallest and largest element close to
+        // the border, we take the border itself. The smallest and
+        // largest border are ignored, as these are the -infinity and
+        // +infinity.
+        boolean isInSomeBin = false;
+        double attributeRange = getBorder(k-1) - getBorder(1);
+        for (int i = 1; i < k - 1; i++) {
+            if (obs >= getBorder(i) && obs <= getBorder(i+1)) {
+                isInSomeBin = true;
+                // determine lower and upper bound
+                long total = 0;
+                for (int j = 0; j < getNumberOfBins(); j++) {
+                    total += getBinCount(j);
+                }
+                double p = 0.0;
+                for (int j = 0; j <= i; j++) {
+                    p += getBinCount(j);
+                }
+                p /= total;
+                double l = findLambdaForLowerBound(I * p, precision, delta);
+                p = 0.0;
+                for (int j = 0; j <= i - 1; j++) {
+                    p += getBinCount(j);
+                }
+                p /= total;
+                double u = findLambdaForUpperBound(I * p, precision, delta);
+                // check whether obs is outside the soft border
+                double x_iA = getBorder(i + 1);
+                double x_iB = getBorder(i);
+                // The computed soft border need to be scaled to the
+                // actual range, since we assumed a range of [0;1] here.
+                l = (l / I) * attributeRange;
+                u = (u / I) * attributeRange;
+                if (obs > x_iB + u && obs < x_iA - l) {
+                    return false;
+                }
+            }
+        }
+
+        return (isInSomeBin) ? true : false;
     }
 }
 

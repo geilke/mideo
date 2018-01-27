@@ -51,7 +51,7 @@ import org.kramerlab.mideo.core.ContinuousRandomVariable;
 import org.kramerlab.mideo.data.streams.Stream;
 import org.kramerlab.mideo.estimators.EstimatorType;
 import org.kramerlab.mideo.estimators.DensityEstimator;
-// import org.kramerlab.mideo.estimators.occd.OCCDEstimator;
+import org.kramerlab.mideo.estimators.occd.OCCDEstimator;
 import org.kramerlab.mideo.estimators.trees.HoeffdingTreeCR;
 import org.kramerlab.mideo.exceptions.UnsupportedConfiguration;
 
@@ -64,9 +64,10 @@ import org.kramerlab.mideo.exceptions.UnsupportedConfiguration;
  * ensemble of weighted classifier chains. For details, we would like to
  * refer you to the paper:
  *
- * <p>Michael Geilke, Andreas Karwath, Eibe Frank, and Stefan
- * Kramer.<br> Online Estimation of Discrete Densities.<br> In:
- * Proceedings of the ICDM 2013, pages 191-200, IEEE 2013.</p>
+ * <p>Michael Geilke, Andreas Karwath, Eibe Frank and Stefan Kramer
+ * <br /> Online Estimation of Discrete, Continuous, and Conditional
+ * Joint Densities using Classifier Chains<br /> In: Data Mining and
+ * Knowledge Discovery, Springer 2017.</p>
  *
  * Please notice that we separated the density estimator and the
  * inference operations. Anything related to inference is provided by
@@ -79,8 +80,11 @@ public class ChainBasedEstimator implements DensityEstimator {
 
     private static Logger logger = LogManager.getLogger();
 
-    private final int BUFFER_SIZE = 250;
-
+    // TODO we need to find another way of configuring buffer sizes. I
+    // just had a problem with RED, which had an initial buffer size of
+    // only 100)
+    private final int BUFFER_SIZE = EDO.MIN_NUM_INSTANCES; 
+    
     private Random random;
     private int ensembleSize;
     private double[] chainWeights;
@@ -95,6 +99,9 @@ public class ChainBasedEstimator implements DensityEstimator {
 
     private DensityEstimator templateDiscreteBaseEstimator;
     private DensityEstimator templateContinuousBaseEstimator;
+
+    private double[] previousDensityValues;
+    private long N;
 
     /**
      * @param ensembleSize number of classifier chains
@@ -121,8 +128,8 @@ public class ChainBasedEstimator implements DensityEstimator {
         int bins = 10;
         int maxKernels = 10000;
         this.templateDiscreteBaseEstimator = new HoeffdingTreeCR();
-        // this.templateContinuousBaseEstimator = new OCCDEstimator(bins, 
-        //                                                         maxKernels);
+        this.templateContinuousBaseEstimator = new OCCDEstimator(bins, 
+                                                                 maxKernels);
     }
 
     /**
@@ -145,7 +152,7 @@ public class ChainBasedEstimator implements DensityEstimator {
      * Specifies the ordering of the random variables for the classifier
      * chain with index {@code index}. It should only contain variables
      * that will act as target variables. Whether this requirement is
-     * met will be check when initializing the density estimator.
+     * met will be checked when initializing the density estimator.
      *
      * @param index index of classifier chain
      * @param ordering variable ordering
@@ -179,10 +186,10 @@ public class ChainBasedEstimator implements DensityEstimator {
      * Specifies the base estimator that is supposed to be used for
      * estimating the conditional densities. It used as a template and
      * will be copied to initialize new base estimators. {@code type}
-     * specifies for which type of target variable the density estimator
-     * is to be used. Hence, one should provide one estimator for
-     * nominal and one estimator for numeric attributes, if the dataset
-     * contains mixed types of attributes.
+     * specifies for which type of target variable the density
+     * estimator is to be used. Hence, one only needs to provide one
+     * estimator for nominal and one estimator for numeric attributes
+     * (in case the dataset contains mixed types of attributes).
      *
      * @param type specifies for which type of target variable the
      * density estimator is to be used
@@ -260,6 +267,12 @@ public class ChainBasedEstimator implements DensityEstimator {
             }
         }
         logger.info("base estimators prepared");
+
+        this.N = 0;
+        this.previousDensityValues = new double[targetVars.size()];
+        for (int i = 0; i < previousDensityValues.length; i++) {
+            previousDensityValues[i] = Math.pow(10, -targetVars.size());
+        }
     }
 
     @Override
@@ -279,6 +292,8 @@ public class ChainBasedEstimator implements DensityEstimator {
 
     @Override
     public void update(Instance inst) {
+        N++;
+
         buffer.add(inst);
         if (buffer.size() >= BUFFER_SIZE) {
             processInstances();
@@ -293,7 +308,8 @@ public class ChainBasedEstimator implements DensityEstimator {
     private void processInstances() {
         // recompute weight of classifier chains if this is an EWCC
         if (!uniformChainWeights) {
-            computeChainWeights();
+            //computeChainWeights();
+            computeChainWeightsByEG();
         }
         
         // prepare update of base estimators by initializing threads: In
@@ -363,6 +379,56 @@ public class ChainBasedEstimator implements DensityEstimator {
         chainWeights = Utils.normalize(chainWeights);
     }
 
+    /**
+     * Recomputes the chain weights on the most recent instances, as
+     * suggested by one of the reviewers.
+     */
+    private void computeChainWeightsByEG() {
+        
+        for (Instance inst : buffer) {
+
+            double eta = Math.sqrt(8 * Math.log(chainWeights.length) / N);
+
+            // density values of the classifier chains for each instance
+            double[] chainDensities = new double[chainWeights.length];
+            for (int i = 0; i < chainWeights.length; i++) {
+                chainDensities[i] = getDensityValue(inst, i);
+            }
+
+
+            double[] x = new double[chainDensities.length];
+            for (int i = 0; i < x.length; i++) {
+                // according to Cesa-Bianchi and Lugosi
+                x[i] = chainDensities[i] / previousDensityValues[i];
+                previousDensityValues[i] = chainDensities[i];
+                // according to Reviewer 1
+                x[i] = chainDensities[i];
+            }
+
+            // P_{t-1} * x_{t-1}
+            double PtimesX = 0.0;
+            for (int i = 0; i < chainWeights.length; i++) {
+                PtimesX += chainWeights[i] * chainDensities[i];
+            }
+        
+            // update weights
+            double[] newChainWeights = new double[chainWeights.length];
+            for (int i = 0; i < ensembleSize; i++) {
+                double expValue = eta * chainDensities[i] / PtimesX;
+                double numerator = chainWeights[i] * Math.exp(expValue);
+                double denominator = 0.0;
+                for (int j = 0; j < chainWeights.length; j++) {
+                    expValue = eta * chainDensities[j] / PtimesX;
+                    denominator += chainWeights[i] * Math.exp(expValue);
+                }
+                newChainWeights[i] = numerator / denominator;
+            }
+            chainWeights = newChainWeights;
+        }
+
+        chainWeights = Utils.normalize(chainWeights);
+    }
+
     @Override
     public double getDensityValue(Instance inst) {
         // As a heuristic, we select only those classifier chains whose
@@ -403,9 +469,14 @@ public class ChainBasedEstimator implements DensityEstimator {
             DensityEstimator be = est.getEstimator();
             chainDensity *= be.getDensityValue(tInst);
         }
+
         return chainDensity;
     }
 
+    public List<Instance> getSample() {
+	return buffer;
+    }
+    
     /**
      * {@code BaseEstimator} provides a density estimator for a
      * conditional density with one target variable and related

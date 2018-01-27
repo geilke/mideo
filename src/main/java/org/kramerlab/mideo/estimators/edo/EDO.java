@@ -44,10 +44,12 @@ import org.kramerlab.mideo.core.Option;
 import org.kramerlab.mideo.core.Options;
 import org.kramerlab.mideo.core.Configurable;
 import org.kramerlab.mideo.estimators.Module;
+import org.kramerlab.mideo.estimators.ModuleDetection;
+import org.kramerlab.mideo.estimators.MetaInformation;
 import org.kramerlab.mideo.estimators.DensityEstimator;
 import org.kramerlab.mideo.estimators.EstimatorType;
 import org.kramerlab.mideo.estimators.trees.HoeffdingTreeCR;
-// import org.kramerlab.mideo.estimators.occd.OCCDEstimator;
+import org.kramerlab.mideo.estimators.occd.OCCDEstimator;
 import org.kramerlab.mideo.exceptions.UnsupportedConfiguration;
 
 /**
@@ -59,9 +61,10 @@ import org.kramerlab.mideo.exceptions.UnsupportedConfiguration;
  * classifier chains. For details, we would like to refer you to the
  * paper:
  *
- * <p>Michael Geilke, Andreas Karwath, Eibe Frank, and Stefan
- * Kramer.<br> Online Estimation of Discrete Densities.<br> In:
- * Proceedings of the ICDM 2013, pages 191-200, IEEE 2013.</p>
+ * <p>Michael Geilke, Andreas Karwath, Eibe Frank and Stefan Kramer
+ * <br /> Online Estimation of Discrete, Continuous, and Conditional
+ * Joint Densities using Classifier Chains<br /> In: Data Mining and
+ * Knowledge Discovery, Springer 2017.</p>
  *
  * To model variable interdependencies more explicitly, we added
  * modules to EDO, as initially proposed by Geilke et al.:
@@ -71,12 +74,14 @@ import org.kramerlab.mideo.exceptions.UnsupportedConfiguration;
  * Mining. <br> In: Proceedings of the DSAA 2014, pages 297-303, IEEE
  * 2014.</p>
  *
- * The implementation of the modules is currently still in progress and
- * not fully available yet. The same holds for the inference operations.
+ * The implementation of the inference operations is currently still
+ * in progress and not fully available yet.
  *
  * @author Michael Geilke
  */
 public class EDO implements DensityEstimator, Configurable {
+
+    public static final int MIN_NUM_INSTANCES = 40;
 
     private static Logger logger = LogManager.getLogger();
 
@@ -123,9 +128,15 @@ public class EDO implements DensityEstimator, Configurable {
 
     private Random random;
 
+    private InstancesHeader header;
     private List<RandomVariable> targetVars;
     private List<RandomVariable> conditionedVars;
+
+    private String name;
+    private ModuleDetection moduleDetection;
     private List<Module> modules;
+    private long instanceCounter;
+    private List<Instance> buffer;
 
     public EDO() {
         this.options = new Options();
@@ -136,7 +147,15 @@ public class EDO implements DensityEstimator, Configurable {
         options.getIntegerOptions().addOption(numBins);
         options.getIntegerOptions().addOption(maxNumberOfKernels);
 
-        this.modules = new ArrayList<>();
+        this.name = "";
+    }
+
+    public String getName() {
+	return name;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override
@@ -152,37 +171,60 @@ public class EDO implements DensityEstimator, Configurable {
         // check whether the arguments match this type of estimator
         DensityEstimator.super.init(header, targetVars, condVars);
 
+        this.header = header;
         this.targetVars = targetVars;
         this.conditionedVars = condVars;
 
         this.random = new Random(seed.getValue());
+        this.modules = new ArrayList<>();
+        this.buffer = new ArrayList<>();
+        this.instanceCounter = 0;
 
-        // configure chain-based estimator
-        int size = ensembleSize.getValue();
-        boolean weights = uniformWeights.getValue();
-        ChainBasedEstimator est = new ChainBasedEstimator(size, weights);
-        est.setSeed(seed.getValue());
-
-        // discrete base estimator
-        String leafCl = leafClassifier.getValue();
-        HoeffdingTreeCR htTemplate = new HoeffdingTreeCR(leafCl);
-        est.setBaseEstimator(EstimatorType.DISC_X1_I_Y1___Yl, htTemplate);
-
-        // continuous base estimator
-        // int bins = numBins.getValue();
-        // int maxKernels = maxNumberOfKernels.getValue();
-        // OCCDEstimator occd = new OCCDEstimator(bins, maxKernels);
-        // est.setBaseEstimator(EstimatorType.CONT_X1_I_Y1___Yl, occd);
-
-        // TODO The actual module support is still missing. Later on,
-        // the structure of the modules has to be estimated.
-        Module module = new Module();
-        est.init(header, targetVars, condVars);
-        module.init(header, targetVars, conditionedVars);
-        module.setDensityEstimator(est);
-        modules.add(module);
+        this.moduleDetection = new ModuleDetection();
+        moduleDetection.init(header, targetVars, conditionedVars);
     }
 
+    private void createModules() throws UnsupportedConfiguration {
+	moduleDetection.prepareModules();
+	for (int i = 0; i < moduleDetection.getNumberOfModules(); i++) {
+	    MetaInformation meta = moduleDetection.getMetaInformation(i);
+
+	    // configure chain-based estimator
+	    int size = ensembleSize.getValue();
+	    boolean weights = uniformWeights.getValue();
+	    ChainBasedEstimator est = new ChainBasedEstimator(size, weights);
+	    est.setSeed(seed.getValue());
+	    // discrete base estimator
+	    String leafCl = leafClassifier.getValue();
+	    HoeffdingTreeCR htTemplate = new HoeffdingTreeCR(leafCl);
+	    est.setBaseEstimator(EstimatorType.DISC_X1_I_Y1___Yl, htTemplate);
+	    // continuous base estimator
+	    int bins = numBins.getValue();
+	    int maxKernels = maxNumberOfKernels.getValue();
+	    OCCDEstimator occd = new OCCDEstimator(bins, maxKernels);
+	    est.setBaseEstimator(EstimatorType.CONT_X1_I_Y1___Yl, occd);
+	    est.init(meta.getHeader(),
+		     meta.getTargetVariables(),
+		     meta.getConditionedVariables());
+	    
+	    // create module
+	    Module module = new Module();
+	    module.init(meta.getHeader(),
+			meta.getTargetVariables(),
+			meta.getConditionedVariables());
+	    module.setName(getName() + "-module" + Integer.toString(i));
+	    module.setDensityEstimator(est);
+	    for (Instance bufferedInst : buffer) {
+		module.getDensityEstimator().update(bufferedInst);
+	    }
+	    modules.add(module);
+	}
+    }
+
+    public List<Module> getModules() {
+	return modules;
+    }
+    
     @Override
     public List<EstimatorType> getSupportedTypes() {
         return Collections.singletonList(EstimatorType.X1___Xk_I_Y1___Yl);
@@ -200,9 +242,29 @@ public class EDO implements DensityEstimator, Configurable {
 
     @Override
     public void update(Instance inst) {
-        // TODO The actual module support is still missing. If several
-        // modules are available, the instance has to be prepared for
-        // each module.
+	// COMMENT: I think that module support works, if the update
+	// method of the base estimators can deal with instances having
+	// more instances than necessary!
+        moduleDetection.update(inst);
+        if (instanceCounter < MIN_NUM_INSTANCES) {
+            buffer.add(inst);
+
+        } else if (instanceCounter == MIN_NUM_INSTANCES) { 
+	    try {
+		createModules();
+		buffer.clear();
+	    } catch (UnsupportedConfiguration ex) {
+		logger.error(ex.toString());
+		System.exit(1);
+	    }
+	    
+        } else if (instanceCounter > MIN_NUM_INSTANCES) {
+            for (Module module : modules) {
+                module.getDensityEstimator().update(inst);
+            }
+        }
+        instanceCounter++;
+
         for (Module module : modules) {
             module.getDensityEstimator().update(inst);
         }
@@ -214,9 +276,17 @@ public class EDO implements DensityEstimator, Configurable {
         for (Module module : modules) {
             densityValue *= module.getDensityEstimator().getDensityValue(inst);
         }
+        if (modules.size() == 0) {
+            densityValue = 0.0;
+        }
         return densityValue;
     }
 
+    @Override
+    public List<Instance> getSample() {
+	return buffer;
+    }
+    
     @Override
     public JsonObject getModelCharacteristics() {
         JsonObjectBuilder o = Json.createObjectBuilder();

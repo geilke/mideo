@@ -58,7 +58,7 @@ public class PrequentialLL implements PerformanceMeasure {
 
     private static Logger logger = LogManager.getLogger();
 
-    private final int PREFIX_SIZE = 500;
+    private final int PREFIX_SIZE = 100;
 
     private Stream stream;
     private DensityEstimator estimator;
@@ -113,7 +113,7 @@ public class PrequentialLL implements PerformanceMeasure {
 
     /**
      * Returns the average prequential log-likelihoods over time as JSON
-     * array. Each element in the array is tuple consisting of a
+     * array. Each element in the array is a tuple consisting of a
      * timestamp, which is the number of processed instances, and the
      * log-likelihood value.
      * 

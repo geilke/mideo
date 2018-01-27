@@ -26,6 +26,7 @@ package org.kramerlab.mideo.estimators;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ArrayList;
 import java.io.Serializable;
 import javax.json.Json;
 import javax.json.JsonStructure;
@@ -48,7 +49,7 @@ import org.kramerlab.mideo.exceptions.UnsupportedConfiguration;
  * it can be initialized accordingly via the {@code init} method, where
  * {@literal X1, ..., Xk} are the target variables and {@literal Y1,
  * ..., Yl} are the variables on which the target variables are
- * conditioned. After initializing the estimator, it can be update
+ * conditioned. After initializing the estimator, it can be updated
  * through the {@code update} method.
  *
  * @author Michael Geilke
@@ -139,9 +140,18 @@ public interface DensityEstimator extends Copyable<DensityEstimator> {
     double getDensityValue(Instance inst);
 
     /**
+     * Returns a sample of instances.
+     * @return instance sample
+     */
+    default List<Instance> getSample() {
+	return new ArrayList<>();
+    }
+    
+    /**
      * To evaluate and debug density estimators, information on the
-     * model in JSON format. This could be something like the depth of
-     * trees, the number of nodes, the number of kernels, etc.
+     * model is provided in JSON format. This could be something like
+     * the depth of trees, the number of nodes, the number of kernels,
+     * etc.
      *
      * @return information about the density estimator in JSON format
      */

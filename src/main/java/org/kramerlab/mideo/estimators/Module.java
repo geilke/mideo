@@ -41,7 +41,7 @@ import org.kramerlab.mideo.estimators.EstimatorType;
 import org.kramerlab.mideo.exceptions.UnsupportedConfiguration;
 
 /**
- * In simple words, a module is an set of random variables that are
+ * In simple words, a module is a set of random variables that are
  * independent from the remaining random variables. Let {@literal X1,
  * ..., Xn} be random variables, let {@literal {Y1, ..., Yk} \subseteq
  * {X1, ..., Xn}}, and let {@literal f} be a density. We say that
@@ -74,12 +74,22 @@ public class Module implements Copyable<Module> {
     private List<RandomVariable> conditionedVars;
     private DensityEstimator estimator;
     private boolean initialized;
-
+    private String name;
+    
     /**
      * Creates an empty module.
      */
     public Module() {
         this.initialized = false;
+	this.name = name;
+    }
+
+    public String getName() {
+	return name;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
     }
 
     /**
