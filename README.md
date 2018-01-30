@@ -1,9 +1,10 @@
 # MiDEO
 MiDEO is a framework to perform data mining on probabilistic condensed representations. It builds on online density estimates that estimate the joint density of data streams.
 
-In the next couple of weeks, we will provide some infrastructure for future data mining algorithms and implement the algorithms proposed in
+For further details, please refer to the paper:
 
-Michael Geilke, Andreas Karwath, Eibe Frank, and Stefan Kramer. *Online Estimation of Discrete Densities*. In: Proceedings of the 13th IEEE International Conference on Data Mining (ICDM 2013), pp. 191-200, IEEE 2013. [doi:10.1109/ICDM.2013.91](http://dx.doi.org/10.1109/ICDM.2013.91).
+Michael Geilke, Andreas Karwath, Eibe Frank and Stefan Kramer. *Online Estimation of Discrete, Continuous, and Conditional Joint Densities using Classifier Chains*.
+In: Data Mining and Knowledge Discovery, Springer 2017. http://dx.doi.org/10.1007/s10618-017-0546-6.
 
 ## Build
 The following command builds a jar file without including any dependencies (e.g., MOA) and makes it available in the folder `target`:
@@ -44,6 +45,16 @@ The easiest way to get in touch with MiDEO are EVAL files. They are basically a 
 ```
 In this example, the density estimator ```org.kramerlab.mideo.estimators.edo.EDO``` is used with a single classifier chain (ensembleSize) and majority class as base classifier (discreteBaseEstimator.leafClassifier). The evaluation is performed by ```org.kramerlab.mideo.evaluation.DensityEstimation```, which measure the average log-likelihood. The density estimator is trained and evaluated on a data stream created from the ARFF file ```src/test/resources/dataset-01.arff```. It will read 100000 instances from it.
 
+Other estimator options (see paper for more details):
+
+- ```uniformWeights``` (boolean): true for ECC and false for EWCC
+- ```continuousBaseEstimator.numBins``` (integer): number of bins for discretization
+- ```continuousBaseEstimator.maxNumberOfKernels``` (integer): maximum number of kernels
+
+Evaluation measures:
+
+- ```"measure": "PrequentialLL"```
+
 To use this EVAL file, one can run MiDEO either directly from Maven
 ```
 mvn exec:java -Dexec.mainClass="org.kramerlab.mideo.evaluation.JobCenter" -Dexec.args="-f examples/bn.eval -startIndex 1 -endIndex 1"
@@ -56,24 +67,5 @@ java -Xmx10000M -cp mideo.jar org.kramerlab.mideo.evaluation.JobCenter -f exampl
 ## Cite
 If you use MiDEO, please cite the following paper:
 
-Michael Geilke, Andreas Karwath, Eibe Frank, and Stefan Kramer. *Online Estimation of Discrete Densities*. In: Proceedings of the 13th IEEE International Conference on Data Mining (ICDM 2013), pp. 191-200, IEEE 2013. [doi:10.1109/ICDM.2013.91](http://dx.doi.org/10.1109/ICDM.2013.91).
-
-```
-@inproceedings{geilke-2013a,
-  author    = {Michael Geilke and
-               Eibe Frank and
-               Andreas Karwath and
-               Stefan Kramer},
-  title     = {Online Estimation of Discrete Densities},
-  booktitle = {Proceedings of the 13th {IEEE} International Conference
-               on Data Mining},
-  pages     = {191--200},
-  year      = 2013,
-  publisher = {IEEE},
-  url       = {http://dx.doi.org/10.1109/ICDM.2013.91},
-  doi       = {10.1109/ICDM.2013.91},
-  timestamp = {Fri, 02 Jan 2015 13:41:10 +0100},
-  biburl    = {http://dblp.uni-trier.de/rec/bib/conf/icdm/GeilkeFKK13},
-  bibsource = {dblp computer science bibliography, http://dblp.org}
-}
-```
+Michael Geilke, Andreas Karwath, Eibe Frank and Stefan Kramer. *Online Estimation of Discrete, Continuous, and Conditional Joint Densities using Classifier Chains*.
+In: Data Mining and Knowledge Discovery, Springer 2017. http://dx.doi.org/10.1007/s10618-017-0546-6.
