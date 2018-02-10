@@ -54,6 +54,8 @@ public class ModuleDetection {
     // other, in terms of the normalized mutual information   
     public static Double DEPENDENCY_THRESHOLD = 0.25;
 
+    public static Boolean MODULES_ENABLED = false;
+    
     private InstancesHeader originalHeader;
     private List<RandomVariable> targetVars;
     private List<RandomVariable> conditionedVars;
@@ -108,7 +110,7 @@ public class ModuleDetection {
     private void groupVariables() {
 	// determine variable dependencies and groups them accordingly
 	this.varGroups = new ArrayList<>();
-	boolean newDepsFound = true;
+	boolean newDepsFound = MODULES_ENABLED;
 	while (newDepsFound) {
 	    newDepsFound = false;
 	    for (MutualInformation NMI : NMIs) {
