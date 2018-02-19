@@ -58,7 +58,7 @@ public class PrequentialLL implements PerformanceMeasure {
 
     private static Logger logger = LogManager.getLogger();
 
-    private final int PREFIX_SIZE = 100;
+    private final int PREFIX_SIZE = 250;
 
     private Stream stream;
     private DensityEstimator estimator;

@@ -1,0 +1,23 @@
+[{
+    "jobDescription": {
+        "outputFile": "letter.result", 
+        "jobIndex": 1, 
+        "estimator": {
+            "label": "edo-cc-MC", 
+            "discreteBaseEstimator.leafClassifier": "MC",
+            "continuousBaseEstimator.numBins": 5,
+            "continuousBaseEstimator.maxNumberOfKernels": 1000, 
+            "type": "org.kramerlab.mideo.estimators.edo.EDO", 
+            "ensembleSize": 1, 
+            "seed": 35316}, 
+        "evaluation": {
+            "measure": "PrequentialLL", 
+            "type": "org.kramerlab.mideo.evaluation.DensityEstimation"}, 
+        "stream": {
+            "label": "dataset-02", 
+            "numInstances": 1000,
+            "streamSource": "src/test/resources/dataset-02.arff", 
+            "classIndex": -1, 
+            "type": "org.kramerlab.mideo.data.streams.FileStream"}}, 
+    "result": null
+}]
