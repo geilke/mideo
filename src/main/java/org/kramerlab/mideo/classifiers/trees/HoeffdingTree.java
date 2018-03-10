@@ -724,10 +724,10 @@ public class HoeffdingTree extends AbstractClassifier {
     protected void attemptToSplit(ActiveLearningNode node, SplitNode parent,
             int parentIndex) {
         // EXTENSION: In some cases, MOA's HoeffdingTree seems to 
-        // continue splitting on the same attribute until it runs 
-        // out of memory. As a workaround, we do not allow more 
-        // than 10 splits on the same attriute along a path from 
-        // the root to a leaf.
+        // continue splitting on the same nominal attribute until 
+        // it runs out of memory. As a workaround, we do not allow 
+        // more than 10 splits on the same attriute along a path 
+        // from the root to a leaf.
         final int SPLIT_LIMIT = 10;
 
         if (!node.observedClassDistributionIsPure()) {
