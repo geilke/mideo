@@ -100,7 +100,7 @@ import org.kramerlab.mideo.classifiers.core.attributeclassobservers.GaussianNume
  * Naive Bayes</li> </ul>
  *
  * @author Richard Kirkby (rkirkby@cs.waikato.ac.nz)
- * @author Michael Geilke
+ * @author Michael Geilke (marked with keyword EXTENSION)
  */
 public class HoeffdingTree extends AbstractClassifier {
 
@@ -723,9 +723,11 @@ public class HoeffdingTree extends AbstractClassifier {
 
     protected void attemptToSplit(ActiveLearningNode node, SplitNode parent,
             int parentIndex) {
-        // EXTENSION: we do not allow more than 10 splits on the same
-        // nominal attriute (this should also be useful for numeric
-        // attributes)
+        // EXTENSION: In some cases, MOA's HoeffdingTree seems to 
+        // continue splitting on the same attribute until it runs 
+        // out of memory. As a workaround, we do not allow more 
+        // than 10 splits on the same attriute along a path from 
+        // the root to a leaf.
         final int SPLIT_LIMIT = 10;
 
         if (!node.observedClassDistributionIsPure()) {
@@ -737,8 +739,8 @@ public class HoeffdingTree extends AbstractClassifier {
             for (int i = 0; i < bestSplitSuggestions.length; i++) {
                 originalSuggestions.add(bestSplitSuggestions[i]);
             }  
-            // remove attributes on which we splitted more than 10 times
-            // already
+            // remove attributes on which we splitted more than 
+            // SPLIT_LIMIT many times already
             List<AttributeSplitSuggestion> filtered = new ArrayList<>();
             for (int i = 0; i < bestSplitSuggestions.length; i++) {
                 if (Collections.frequency(node.getParents(), i) <= SPLIT_LIMIT) {
