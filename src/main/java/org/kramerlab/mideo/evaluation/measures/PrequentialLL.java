@@ -91,12 +91,12 @@ public class PrequentialLL implements PerformanceMeasure {
 
         while (stream.hasMoreInstances()) {
             Instance inst = stream.nextInstance();
-            estimator.update(inst);
             if (instCounter > PREFIX_SIZE) {
                 double currentLL = Math.log(estimator.getDensityValue(inst));
                 ll += currentLL;
             }
-            double preqLL = ll / (instCounter - PREFIX_SIZE);
+	    estimator.update(inst);
+	    double preqLL = ll / (instCounter - PREFIX_SIZE);
             logger.info("Instance {} with LL {}", instCounter, preqLL);
             measurements.add(new Measurement(instCounter, preqLL));
             instCounter++;
