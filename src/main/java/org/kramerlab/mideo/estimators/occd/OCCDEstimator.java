@@ -337,7 +337,7 @@ public class OCCDEstimator implements DensityEstimator {
         }
 
         double density = kernels.evaluate(inst.classValue(), w);
-            
+
         String att = getTargetVariables().get(0).getAttribute().name();        
         logger.info("Attribute {}, density value {}", att, density);
 

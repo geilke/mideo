@@ -73,7 +73,7 @@ public class RED implements DensityEstimator, Configurable {
      * The number of instance that are used to initialize the density
      * estimate.
      */
-    private final int INITIALIZATION_BATCH = 100;
+    private final int INITIALIZATION_BATCH = 250;
     private List<Instance> buffer;
     private boolean isInitialized;
 
@@ -88,7 +88,7 @@ public class RED implements DensityEstimator, Configurable {
     private Option<Integer> norm = new Option<>(
         "norm",
         "the norm, which is used for the distance measure",
-        1,
+        2,
         n -> (n > 0));
     
     private Option<Integer> numLandmarks = new Option<>(
@@ -100,7 +100,7 @@ public class RED implements DensityEstimator, Configurable {
     private Option<Float> mahalonobisDistance = new Option<>(
         "mahalonobisDistance",
         "the mahalonobisDistance used for the Gaussians",
-        3.0f,
+        3.f,
         m -> (m > 0));
 
     private Option<Integer> thresholdBecomingRepresentative = new Option<>(
@@ -448,7 +448,7 @@ public class RED implements DensityEstimator, Configurable {
             }
 
 	    // TODO: centeralize configuration
-            if (distance < minDist && r.getNumberOfObservations() > 500) {
+            if (distance < minDist && r.getNumberOfObservations() > 100) {
         	repIndex = i;
         	minDist = distance;
                 matchFound = true;
@@ -458,7 +458,7 @@ public class RED implements DensityEstimator, Configurable {
 	double p = 0.0;
         if (matchFound && layer.getRepresentatives().size() > 0) {
             p = layer.getRepresentatives().get(repIndex).getDensityValue(obs);
-        } 
+        }
 
         logger.info("Candidates: {}", () -> layer.getCandidates().size());
         logger.info("Representatives: {}", () -> layer.getRepresentatives().size());
