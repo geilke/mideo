@@ -107,7 +107,7 @@ public class RED implements DensityEstimator, Configurable {
         "thresholdBecomingRepresentative",
         "the number of instances that a candidate has to gather," +
         "until a candidate is turned into a representative",
-        100,
+        200,
         t -> (t > 0));
 
     private Option<Integer> helpingNeighbors = new Option<>(
@@ -448,7 +448,7 @@ public class RED implements DensityEstimator, Configurable {
             }
 
 	    // TODO: centeralize configuration
-            if (distance < minDist && r.getNumberOfObservations() > 100) {
+            if (distance < minDist && r.getNumberOfObservations() > 200) {
         	repIndex = i;
         	minDist = distance;
                 matchFound = true;

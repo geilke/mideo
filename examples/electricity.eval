@@ -6,7 +6,7 @@
             "label": "edo-cc-MC", 
             "discreteBaseEstimator.leafClassifier": "MC",
             "continuousBaseEstimator.numBins": 5,
-            "continuousBaseEstimator.maxNumberOfKernels": 1000, 
+            "continuousBaseEstimator.maxNumberOfKernels": 10000, 
             "type": "org.kramerlab.mideo.estimators.edo.EDO", 
             "ensembleSize": 1, 
             "seed": 35317}, 
@@ -14,9 +14,9 @@
             "measure": "PrequentialLL", 
             "type": "org.kramerlab.mideo.evaluation.DensityEstimation"}, 
         "stream": {
-            "label": "dataset-03", 
-            "numInstances": 1000,
-            "streamSource": "src/test/resources/dataset-03.arff", 
+            "label": "electricity", 
+            "numInstances": 45313,
+            "streamSource": "src/test/resources/electricity.arff", 
             "classIndex": -1, 
             "type": "org.kramerlab.mideo.data.streams.FileStream"}}, 
     "result": null

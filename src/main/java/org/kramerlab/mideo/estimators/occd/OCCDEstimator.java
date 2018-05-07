@@ -77,7 +77,7 @@ public class OCCDEstimator implements DensityEstimator {
     private List<BufferedInstance> buffer;
     private double estimateMu;
     private double estimateSigma;
-    private int maxBufferSize = 100;
+    private int maxBufferSize = 200;
 
     private GaussianMixture kernels;
     private int maxKernels = 10000; // TODO How to choose that?
@@ -290,11 +290,12 @@ public class OCCDEstimator implements DensityEstimator {
         // The smoothing parameter should be in the order of
         // O(n^(1/4)). Since we compute sigma from a small sample, we
         // choose a larger constant to correct for the small sample.
-        double smoothing = 1 * Math.pow(instancesForEstimate, 0.25);
-        sigma_X = sigma_X / smoothing;
-
-        // add correction in case sigma_X equals 0 (e.g., mu = 0.0)
-        if (sigma_X == 0) {
+        double smoothing = Math.pow(instancesForEstimate, 0.25);
+        sigma_X = (1.1 * sigma_X) / smoothing;
+	
+        // add correction in case sigma_X equals 0 (e.g., x_i - mu is
+        // always 0.0)
+        if (sigma_X == 0.0) {
             sigma_X = 0.1 / smoothing;
         }
 
@@ -337,7 +338,7 @@ public class OCCDEstimator implements DensityEstimator {
         }
 
         double density = kernels.evaluate(inst.classValue(), w);
-
+	
         String att = getTargetVariables().get(0).getAttribute().name();        
         logger.info("Attribute {}, density value {}", att, density);
 

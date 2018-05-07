@@ -58,8 +58,9 @@ public class PrequentialLL implements PerformanceMeasure {
 
     private static Logger logger = LogManager.getLogger();
 
-    private final int PREFIX_SIZE = 500;
-
+    private final int PREFIX_SIZE = 1000;
+    private final double PENALTY_VALUE = Math.log(10) * (-100);
+    
     private Stream stream;
     private DensityEstimator estimator;
 
@@ -88,12 +89,23 @@ public class PrequentialLL implements PerformanceMeasure {
     public void evaluate() {
         this.ll = 0.0;
         this.instCounter = 0;
-
+	
         while (stream.hasMoreInstances()) {
             Instance inst = stream.nextInstance();
             if (instCounter > PREFIX_SIZE) {
-                double currentLL = Math.log(estimator.getDensityValue(inst));
-                ll += currentLL;
+		double densityValue = estimator.getDensityValue(inst);
+                double currentLL = Math.log(densityValue);
+		if (densityValue == 0.0) {
+		    // Handle instances having a density value of 0.0:
+		    // In rare cases (e.g., in cause of outliers),
+		    // density estimates could return a density value
+		    // of 0.0, thereby corrupting the overall
+		    // log-likelihood. To avoid this, we add a penalty
+		    // value instead of @code{currentLL} to @code{ll}.
+		    ll += PENALTY_VALUE;
+		} else {
+		    ll += currentLL;
+		}
             }
 	    estimator.update(inst);
 	    double preqLL = ll / (instCounter - PREFIX_SIZE);

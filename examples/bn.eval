@@ -12,9 +12,9 @@
             "measure": "LL", 
             "type": "org.kramerlab.mideo.evaluation.DensityEstimation"}, 
         "stream": {
-            "label": "dataset-01", 
+            "label": "bn", 
             "numInstances": 100000,
-            "streamSource": "src/test/resources/dataset-01.arff", 
+            "streamSource": "src/test/resources/bn.arff", 
             "classIndex": -1, 
             "type": "org.kramerlab.mideo.data.streams.FileStream"}}, 
     "result": null
